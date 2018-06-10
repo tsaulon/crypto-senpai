@@ -1,3 +1,6 @@
+
+//const token = ;
+
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const request = require("request");
@@ -14,8 +17,8 @@ client.on("message", msg => {
 
     var received = msg.content.toLowerCase();    //ignore capitalization formatting.
 
-    //if "show top" is included in string
-    if(received.indexOf("show top") > -1){
+    //Show top coins (Max. 10)
+    if(received.indexOf("show top") == 0){
         data_service.getTop(received).then(data => {
             msg.reply(data);
         }).catch(data => {
@@ -23,8 +26,8 @@ client.on("message", msg => {
         });
     }
 
-    //if only "show" is included in string
-    if(received.indexOf("show") > -1 && received.indexOf("top") == -1){
+    //Show specific coin
+    if(received.indexOf("show") == 0 && received.indexOf("top") == -1){
         data_service.getCoin(received).then(data => {
             msg.reply(data);
         }).catch(data => {
@@ -32,7 +35,14 @@ client.on("message", msg => {
         });
     }
 
-    //TODO: Create alert functions
+    //Alert when coin is certain price
+    if(received.indexOf("alert when") == 0 && received.indexOf("hits") > -1){
+        data_service.alertWhen(received).then(data => {
+            msg.reply(data);
+        }).catch(data => {
+            msg.reply(data);
+        });
+    }
 });
 
 client.login(token);
