@@ -1,5 +1,5 @@
 
-//const token = ;
+//const token = /* token goes here */;
 
 const Discord = require("discord.js");
 const client = new Discord.Client();
@@ -38,9 +38,9 @@ client.on("message", msg => {
     //Alert when coin is certain price
     if(received.indexOf("alert when") == 0 && received.indexOf("hits") > -1){
         data_service.alertWhen(received).then(data => {
-            msg.reply(data);
+            console.log(data);
         }).catch(data => {
-            msg.reply(data);
+            console.log(data);
         });
     }
 });
