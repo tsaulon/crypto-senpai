@@ -1,12 +1,12 @@
 
-//const token = /* token goes here */;
+//const token = ;
 
+var data_service = require("./data-service.js");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const request = require("request");
 var node_coinmarketcap = require("node-coinmarketcap");
 var coin_market = new node_coinmarketcap();
-var data_service = require("./data-service.js");
 
 //Discord functions
 client.on("ready", () => {
@@ -34,16 +34,6 @@ client.on("message", msg => {
             msg.reply(data);
         });
     }
-
-    //Alert when coin is certain price
-    if(received.indexOf("alert when") == 0 && received.indexOf("hits") > -1){
-        data_service.alertWhen(received).then(data => {
-            console.log(data);
-        }).catch(data => {
-            console.log(data);
-        });
-    }
 });
 
 client.login(token);
-

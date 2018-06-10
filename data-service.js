@@ -1,11 +1,13 @@
 const request = require("request");
 var node_coinmarketcap = require("node-coinmarketcap");
-var coin_market = new node_coinmarketcap(options);
 var options = {
     events: true,
-    refresh: 60,
+    refresh: 1,
     convert: "USD"
 }
+var coin_market = new node_coinmarketcap(options);
+
+var watchList = []; //holds lists of events that give updates on certain coins.
 
 module.exports.getCoin = (query) => {
     return new Promise((resolve, reject) => {
@@ -69,45 +71,6 @@ module.exports.getTop = (query) => {
         } catch(e){
             reject(e);
         }
-    });
-}
-
-module.exports.alertWhen = (query) => {
-    return new Promise((resolve, reject) => {
-        
-        //parsing string
-        var pile = query.split(" ");
-        pile = pile.slice(2);   // remove 'alert when'
-        pile.splice(1, 1);  //remove element at index 1 and remove 1 element...
-                            //pile[0]: symbol, pile[1]: alert
-
-        //check if coin exists
-        coin_market.multi(coins => {
-
-            var exists = false;
-            var alertAt = pile[1];
-
-            var forServer = "Alert for " + pile[0] + " at " + alertAt + " on " + Date.now();
-            var forClient = pile[0].toUpperCase() + " has just hit " + alertAt; 
-
-            try{
-                var coin = coins.get(pile[0].toUpperCase());    //coin object from coinmarket API
-                console.log(coin);
-                if(coin.price_usd < alertAt){
-                    coin_market.onGreater(pile[0].toUpperCase(), alertAt, (coin) => {
-                        console.log(forServer + "[.onGreater()]");
-                        resolve(forClient + ". It is lambo land time!");
-                    });
-                }else{
-                    coin_market.onLesser(pile[0].toUpperCase(), alertAt, (coin) => {
-                        console.log(forServer + "[.onLesser()]");
-                        resolve(forClient + ". BUY BUY BUY.");
-                    });                  
-                }                                            
-            } catch(e){
-                reject(e.message);
-            }
-        });        
     });
 }
 
