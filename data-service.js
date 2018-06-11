@@ -1,6 +1,6 @@
 const request = require("request");
 var node_coinmarketcap = require("node-coinmarketcap");
-var coin_market = new node_coinmarketcap({events: true, refresh: 60, convert: "USD"});
+var coin_market = new node_coinmarketcap({events: true, refresh: 5, convert: "USD"});
 
 var watchList = []; //holds lists of events that give updates on certain coins.
 
@@ -21,13 +21,13 @@ module.exports.getCoin = (query) => {
                 try{
                     reply += showCoin(coins.get(str[x].toUpperCase()));
                 } catch(e){
-                    errorMsg += "I don't recognize " + str[x].toUpperCase() + " as a symbol.";
+                    errorMsg += str[x].toUpperCase() + " either does not exist or is not a part of the top 100.";
                     errorFlag = true;                    
                 }
             }
 
             //if no error was caught
-            (!errorFlag) ? resolve(reply + "\n" + query) : reject(errorMsg + reply);
+            (!errorFlag) ? resolve(reply) : reject(errorMsg + reply);
         });
     });
    
@@ -76,36 +76,41 @@ module.exports.watch = (query) => {
         var parsed = query.split(" ");
         parsed = parsed.slice(1);
         parsed = parsed[0];
-    
-        var exists = false;
-    
-        try{
-            for(x in watchList){
-                if(parsed === watchList[x].m_coin.symbol.toLowerCase()){
-                    exists = true;  //set flag
-                    break;  //stop looping when found
-                }
-            }
-            
-            if(exists) { throw "Watch for " + coin.name + " already exists!"; }
-
-            //create new watch in watch list
-            coin_market.on(parsed, (coin, event) => {
-                var watch = {
-                    m_coin: coin,
-                    m_event: event
-                }
         
-                watchList.push(watch);
-                console.log(coin.name + " has been added");
-                resolve(coin.name + " has been succesfully added to the watch list!");
-            });
-        } catch(e){
-            reject(e);
-        }
+        coin_market.on(parsed, (coin, event) => {
+            
+            var exists = false;
+
+            watchList.forEach((x) => {
+                if(x.toLowerCase() == parsed){
+                    exists = true;                 
+                }
+            });  
+
+            if(!exists){
+                watchList.push(coin.symbol);
+                resolve(coin.name + " has been added to watch list!");
+            } else{
+                reject(coin.name + " already exists in the watch list.");
+            }
+        });
     });
 }
 
+module.exports.createBroadcast = () => {
+    
+    var str = "Watch list is empty!";
+
+    if(watchList.length > 0){
+        str = "show";   //build string
+
+        for(x in watchList){
+            str += " " + watchList[x];
+        }
+    }
+
+    return str;
+}
 
 function showCoin(x) {
 
