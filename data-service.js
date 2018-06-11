@@ -1,11 +1,6 @@
 const request = require("request");
 var node_coinmarketcap = require("node-coinmarketcap");
-var options = {
-    events: true,
-    refresh: 1,
-    convert: "USD"
-}
-var coin_market = new node_coinmarketcap(options);
+var coin_market = new node_coinmarketcap({events: true, refresh: 60, convert: "USD"});
 
 var watchList = []; //holds lists of events that give updates on certain coins.
 
@@ -73,6 +68,44 @@ module.exports.getTop = (query) => {
         }
     });
 }
+
+module.exports.watch = (query) => {
+
+    return new Promise((resolve, reject) => {
+
+        var parsed = query.split(" ");
+        parsed = parsed.slice(1);
+        parsed = parsed[0];
+    
+        var exists = false;
+    
+        try{
+            for(x in watchList){
+                if(parsed === watchList[x].m_coin.symbol.toLowerCase()){
+                    exists = true;  //set flag
+                    break;  //stop looping when found
+                }
+            }
+            
+            if(exists) { throw "Watch for " + coin.name + " already exists!"; }
+
+            //create new watch in watch list
+            coin_market.on(parsed, (coin, event) => {
+                var watch = {
+                    m_coin: coin,
+                    m_event: event
+                }
+        
+                watchList.push(watch);
+                console.log(coin.name + " has been added");
+                resolve(coin.name + " has been succesfully added to the watch list!");
+            });
+        } catch(e){
+            reject(e);
+        }
+    });
+}
+
 
 function showCoin(x) {
 
