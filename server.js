@@ -1,3 +1,4 @@
+
 //const token = "";
 
 var data_service = require("./data-service.js");
@@ -15,16 +16,7 @@ client.on("ready", () => {
 
 client.on("message", msg => {
 
-    var received = msg.content.toLowerCase();    //ignore capitalization formatting.
-
-    //Show top coins (Max. 10)
-    if(received.indexOf("show top") == 0){
-        data_service.getTop(received).then(data => {
-            msg.reply(data);
-        }).catch(data => {
-            msg.reply(data);
-        });
-    }
+    var received = msg.content.toLowerCase();    //ignore formatting.
 
     //Show specific coin
     if(received.indexOf("show") == 0 && received.indexOf("top") == -1){
@@ -35,18 +27,30 @@ client.on("message", msg => {
         });
     }
 
-    //Alert on intervals
+    //Show top coins (Max. 10)
+    if(received.indexOf("show top") == 0){
+        data_service.getTop(received).then(data => {
+            msg.reply(data);
+        }).catch(data => {
+            msg.reply(data);
+        });
+    }
+
+    //Watch a specific coin
     if(received.indexOf("watch") == 0){
         data_service.watch(received).then(data => {
             console.log(data);
         }).then(() => {
+
+            //delete setInterval() if it exists
             if(broadcasting){
                 clearInterval(broadcasting);
                 broadcasting = false;
             }
-        
+            
+            //create new broadcast
             broadcasting = setInterval(() => {
-                //msg.channel.send();
+                //send the broadcasts
                 data_service.getCoin(data_service.createBroadcast()).then(data => {
                     msg.channel.send(data);
                 }).catch(data => {
@@ -54,7 +58,7 @@ client.on("message", msg => {
                 });
             }, 5000);
         }).catch(data => {
-            console.log(data);
+            msg.reply(data);
         })
     }
 });

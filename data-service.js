@@ -2,8 +2,13 @@ const request = require("request");
 var node_coinmarketcap = require("node-coinmarketcap");
 var coin_market = new node_coinmarketcap({events: true, refresh: 5, convert: "USD"});
 
-var watchList = []; //holds lists of events that give updates on certain coins.
+var watchList = []; //holds lists of coins being watched.
 
+/*
+ * This function receives a parametered string, parses the coin symbol,
+ * creates a request for the coin and resolves a string of the coin's details
+ * or rejects a string with an error message.
+ */
 module.exports.getCoin = (query) => {
     return new Promise((resolve, reject) => {
         var str = query.split(" ");
@@ -33,6 +38,11 @@ module.exports.getCoin = (query) => {
    
 }
 
+/*
+ * This function receives a parametered string, parses the amount to be displayed, 
+ * creates a request for the coin and resolves a 
+ * string of the coin list's details or rejects a string with an error message.
+ */
 module.exports.getTop = (query) => {
     return new Promise((resolve, reject) => {
 
@@ -69,6 +79,12 @@ module.exports.getTop = (query) => {
     });
 }
 
+/*
+ * This function receives a parametered string, parses the coin, and
+ * adds a scheduler for coin details to the coin_market object. This function
+ * also resolves a string that confirms the coin has been added to the watch list.
+ * It also rejects a string that contains the error details.
+ */
 module.exports.watch = (query) => {
 
     return new Promise((resolve, reject) => {
@@ -97,6 +113,10 @@ module.exports.watch = (query) => {
     });
 }
 
+/*
+ * This function builds a string query to be parsed
+ * for the getCoin() function. [Consider polishing...]
+ */ 
 module.exports.createBroadcast = () => {
     
     var str = "Watch list is empty!";
@@ -112,6 +132,10 @@ module.exports.createBroadcast = () => {
     return str;
 }
 
+/*
+ * This function receives a coin object, creates, and returns
+ * a string using the object's properties.
+ */ 
 function showCoin(x) {
 
     var str = "\n\n" + x.name  + " (" + x.symbol + ")" + ":\t$" + parseFloat(x.price_usd).toFixed(3) + " USD";
