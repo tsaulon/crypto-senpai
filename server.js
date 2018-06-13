@@ -1,12 +1,12 @@
-
-//const token = "";
+//REMEMBER TO REMOVE THIS FOR EVERY GITHUB COMMIT
+//const token = ;
 
 var data_service = require("./data-service.js");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const request = require("request");
 var node_coinmarketcap = require("node-coinmarketcap");
-var coin_market = new node_coinmarketcap({events: true, refresh: 1, convert: "USD"});
+var coin_market = new node_coinmarketcap();
 var broadcasting = false;
 
 //Discord functions
@@ -19,7 +19,7 @@ client.on("message", msg => {
     var received = msg.content.toLowerCase();    //ignore formatting.
 
     //Show specific coin
-    if(received.indexOf("show") == 0 && received.indexOf("top") == -1){
+    if(received.indexOf("show") === 0 && received.indexOf("top") == -1){
         data_service.getCoin(received).then(data => {
             msg.reply(data);
         }).catch(data => {
@@ -28,7 +28,7 @@ client.on("message", msg => {
     }
 
     //Show top coins (Max. 10)
-    if(received.indexOf("show top") == 0){
+    if(received.indexOf("show top") === 0){
         data_service.getTop(received).then(data => {
             msg.reply(data);
         }).catch(data => {
@@ -37,9 +37,12 @@ client.on("message", msg => {
     }
 
     //Watch a specific coin
-    if(received.indexOf("watch") == 0){
+    if(received.indexOf("watch") === 0){
+
+        msg.channel.send("Processing request...");
+
         data_service.watch(received).then(data => {
-            console.log(data);
+            msg.reply(data + " I will notify you every hour or so.");
         }).then(() => {
 
             //delete setInterval() if it exists
@@ -56,14 +59,20 @@ client.on("message", msg => {
                 }).catch(data => {
                     msg.channel.send(data);
                 });
-            }, 5000);
+            }, 3600000);  //create broadcasts every hour
         }).catch(data => {
             msg.reply(data);
         })
     }
-});
 
-//TODO: create user deletions from the watch list.
+    if(received === "show watch list"){
+        data_service.getCoin(data_service.createBroadcast()).then(data => {
+            msg.channel.send(data);
+        }).catch(data => {
+            msg.channel.send(data);
+        });
+    }
+});
 
 client.login(token);
 

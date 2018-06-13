@@ -1,6 +1,6 @@
 const request = require("request");
 var node_coinmarketcap = require("node-coinmarketcap");
-var coin_market = new node_coinmarketcap({events: true, refresh: 5, convert: "USD"});
+var coin_market = new node_coinmarketcap({events: true, refresh: 60, convert: "USD"});
 
 var watchList = []; //holds lists of coins being watched.
 
@@ -89,29 +89,44 @@ module.exports.watch = (query) => {
 
     return new Promise((resolve, reject) => {
 
-        var parsed = query.split(" ");
-        parsed = parsed.slice(1);
-        parsed = parsed[0];
+        try{
+            var parsed = query.split(" ");
+            parsed = parsed.slice(1);
+            parsed = parsed[0];
+
+            if (parsed == undefined)
+                throw "your request is missing a symbol."
+
+            coin_market.on(parsed, (coin, event) => {
         
-        coin_market.on(parsed, (coin, event) => {
-            
-            var exists = false;
-
-            watchList.forEach((x) => {
-                if(x.toLowerCase() == parsed){
-                    exists = true;                 
+                var exists = false;
+    
+                watchList.forEach((x) => {
+                    if(x.toLowerCase() == parsed){
+                        exists = true;                 
+                    }
+                });  
+    
+                try{
+                    if(!exists && watchList.length < 10 && coin.symbol.toLowerCase() == parsed){
+                        watchList.push(coin.symbol);
+                        resolve(coin.name + " has been added to watch list!");
+                    } else if(exists){
+                        throw coin.name + " already exists in the watch list.";
+                    } else if(watchList.length >= 10){
+                        throw "watch list is already full!";
+                    }
+                } catch(e){
+                    reject(e);
                 }
-            });  
+            });
 
-            if(!exists){
-                watchList.push(coin.symbol);
-                resolve(coin.name + " has been added to watch list!");
-            } else{
-                reject(coin.name + " already exists in the watch list.");
-            }
-        });
+        } catch(e){
+            reject(e);
+        }
     });
 }
+
 
 /*
  * This function builds a string query to be parsed
@@ -119,17 +134,17 @@ module.exports.watch = (query) => {
  */ 
 module.exports.createBroadcast = () => {
     
-    var str = "Watch list is empty!";
+        var str = "Watch list is empty!";
 
-    if(watchList.length > 0){
-        str = "show";   //build string
+        if(watchList.length > 0){
+            str = "show";   //build string
 
-        for(x in watchList){
-            str += " " + watchList[x];
+            for(x in watchList){
+                str += " " + watchList[x];
+            }
         }
-    }
 
-    return str;
+        return str;
 }
 
 /*
